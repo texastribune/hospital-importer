@@ -1,0 +1,17 @@
+{
+  "general_information": {
+    "file": "Hospital_Data_TX.csv"
+  },
+  "emergency_care": {
+    "file": "Timely and Effective Care - Hospital.csv"
+  },
+  "quality_indicators": {
+    "file": "HCAHPS - Hospital.csv"
+  },
+  "associated_infections": {
+    "file": "Healthcare Associated Infections - Hospital.csv"
+  },
+  "complications_rates": {
+    "file": "Readmissions Complications and Deaths - Hospital.csv"
+  }
+}

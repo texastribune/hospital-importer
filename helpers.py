@@ -26,3 +26,15 @@ def clean(cad):
 
 def format_phone(cad):
     return "(%s) %s-%s" % tuple(cad.split('-'))
+
+def parse_int(cad):
+    try:
+        return int(cad)
+    except ValueError:
+        return None
+
+def parse_float(cad):
+    try:
+        return float(cad)
+    except ValueError:
+        return None
