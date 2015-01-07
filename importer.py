@@ -6,6 +6,35 @@ from inflection import *
 from helpers import *
 
 
+class OutcomeIndicators(object):
+    # Readmissions Complications and Deaths - Hospital.csv
+    measures = {
+        "Acute Myocardial Infarction (AMI) 30-Day Readmission Rate": "readm_30_ha",
+        "Heart failure (HF) 30-Day Readmission Rate": "readm_30_hf",
+        "Pneumonia (PN) 30-Day Readmission Rate": "readm_30_pn",
+        "Rate of readmission after hip/knee surgery": "readm_30_hip_knee",
+        "Rate of readmission after discharge from hospital (hospital-wide)": "readm_30_hosp_wide",
+
+        "Acute Myocardial Infarction (AMI) 30-Day Mortality Rate": "mort_30_ami",
+        "Heart failure (HF) 30-Day Mortality Rate": "mort_30_hf",
+        "Pneumonia (PN) 30-Day Mortality Rate": "mort_30_pn",
+        "Rate of complications for hip/knee replacement patients": "comp_hip_knee"
+    }
+
+    def __init__(self, filepath):
+        self.filepath = filepath
+
+    def provider(self, provider_number):
+        output = {}
+        with open(self.filepath) as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if row[0] == provider_number:
+                    if row[8] in self.measures:
+                        output[self.measures[row[8]]] = parse_float(row[12])
+        return output
+
+
 class ComplicationIndicators(object):
     measures = {
         "Deaths among Patients with Serious Treatable Complications after Surgery": "death_from_serious_complications",
@@ -24,6 +53,7 @@ class ComplicationIndicators(object):
                     if row[8] in self.measures:
                         output[self.measures[row[8]]] = row[10]
         return output
+
 
 class AssociatedInfections(object):
     measures = {
@@ -88,7 +118,6 @@ class QualityIndicators(object):
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[0] == provider_number:
-                    print row
                     for measure in self.measures:
                         if row[8] == measure:
                             output[measure.lower()] = parse_int(row[11])
@@ -102,7 +131,7 @@ class GeneralInformation(object):
         self.filepath = filepath
         self.populate()
 
-    def hospital(self, provider_number):
+    def provider(self, provider_number):
         with open(self.filepath) as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
@@ -133,33 +162,35 @@ class GeneralInformation(object):
                 self.provider_numbers.append(row["Provider Number"])
 
 
+class Processor(object):
+    def __init__(self, manifest, directory):
+        self.manifest = manifest
+        self.directory = directory
+
+    def hospital(self, provider_number):
+        hosp_file = os.path.join('./data', self.manifest["general_information"]["file"])
+        emer_file = os.path.join(self.directory, self.manifest["emergency_care"]["file"])
+        quality_file = os.path.join(self.directory, self.manifest["quality_indicators"]["file"])
+        infec_file = os.path.join(self.directory, self.manifest["associated_infections"]["file"])
+        comp_file = os.path.join(self.directory, self.manifest["complications_rates"]["file"])
+        outcome_file = os.path.join(self.directory, self.manifest["outcomes"]["file"])
+
+        output = GeneralInformation(hosp_file).provider(provider_number)
+        output["emergency_care"] = EmergencyRates(emer_file).provider(provider_number)
+        output["quality_indicators"] = QualityIndicators(quality_file).provider(provider_number)
+        output["associated_infections"] = AssociatedInfections(infec_file).provider(provider_number)
+        output["complications_rates"] = ComplicationIndicators(comp_file).provider(provider_number)
+        output["outcomes"] = OutcomeIndicators(outcome_file).provider(provider_number)
+
+        return output
+
+
 def process(manifest, directory):
     hosp_file = os.path.join('./data', manifest["general_information"]["file"])
-    emer_file = os.path.join(directory, manifest["emergency_care"]["file"])
-    quality_file = os.path.join(directory, manifest["quality_indicators"]["file"])
-    infec_file = os.path.join(directory, manifest["associated_infections"]["file"])
-    comp_file = os.path.join(directory, manifest["complications_rates"]["file"])
+    general_info = GeneralInformation(hosp_file)
 
-    emergency_rates = EmergencyRates(emer_file)
-    print emergency_rates.provider("450369")
-
-    quality_indicators = QualityIndicators(quality_file)
-    print quality_indicators.provider("450369")
-
-    associated_infections = AssociatedInfections(infec_file)
-    print associated_infections.provider("450369")
-
-    complication_indicators = ComplicationIndicators(comp_file)
-    print complication_indicators.provider("450369")
-
-    # index = 1
-    # general_info = GeneralInformation(hosp_file)
-
-    # for provider_number in general_info.provider_numbers:
-    #     hospital = general_info.hospital(provider_number)
-    #     hospital["_id"] = index
-    #     index += 1
-    #     print hospital
+    for provider_number in general_info.provider_numbers:
+        print Processor(manifest, directory).hospital(provider_number)
 
 
 if __name__ == '__main__':

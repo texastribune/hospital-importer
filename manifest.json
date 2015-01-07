@@ -13,5 +13,8 @@
   },
   "complications_rates": {
     "file": "Readmissions Complications and Deaths - Hospital.csv"
+  },
+  "outcomes": {
+    "file": "Readmissions Complications and Deaths - Hospital.csv"
   }
 }
