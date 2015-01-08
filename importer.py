@@ -5,6 +5,29 @@ import sys
 from inflection import *
 from helpers import *
 
+class StateIndicators(object):
+    def __init__(self, basepath, config):
+        self.basepath = basepath
+        self.config = config
+
+    def to_dict(self):
+        return self.import_emergency_care(self.config["emergency_care"])
+
+    def import_emergency_care(self, filename):
+        output = {}
+        measures = ["ED_1b", "OP_18b", "OP_20"]
+        columns = {
+            "measure_id": 3,
+            "value": 4
+        }
+        with open(os.path.join(self.basepath, filename)) as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if row[0] == "TX":
+                    if row[columns["measure_id"]] in measures:
+                        output[row[columns["measure_id"]].lower()] = parse_float(row[columns["value"]])
+        return output
+
 
 class NationalIndicators(object):
     def __init__(self, basepath, config):
@@ -227,13 +250,59 @@ class Processor(object):
 
         return output
 
+    def state(self):
+        return StateIndicators(self.directory, self.manifest["state"]).to_dict()
 
-def process_batch(manifest, directory):
-    hosp_file = os.path.join('./data', manifest["general_information"]["file"])
-    general_info = GeneralInformation(hosp_file)
+    def national(self):
+        return NationalIndicators(self.directory, self.manifest["national"]).to_dict()
 
-    for provider_number in general_info.provider_numbers:
-        print Processor(manifest, directory).hospital(provider_number)
+    def to_feature(self, hospital, index=1):
+        return {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    hospital["latitude"],
+                    hospital["longitude"]
+                ]
+            },
+            "type": "Feature",
+            "properties": {
+                "description": "%s, %s - %s" % (hospital["address"], hospital["city"], hospital["zipcode"]),
+                "id": index,
+                "title": hospital["name"]
+            }
+        }
+
+    def store_hospital(self, hospital, index=1):
+        with open("output/%s.json" % index, "w") as jsonfile:
+            jsonfile.write(json.dumps(hospital))
+
+    def to_json(self):
+        geojson = {
+        "type": "FeatureCollection",
+        "bbox": [
+            -106.49985294199968,
+            25.91785218500047,
+            -93.76764915199965,
+            36.19071202900045
+        ],
+        "features": []}
+
+        with open("output/state.json", "w") as jsonfile:
+            jsonfile.write(json.dumps(self.state()))
+
+        with open("output/national.json", "w") as jsonfile:
+            jsonfile.write(json.dumps(self.national()))
+
+        index = 1
+        hosp_file = os.path.join('./data', self.manifest["general_information"]["file"])
+        general_info = GeneralInformation(hosp_file)
+
+        for provider_number in general_info.provider_numbers:
+            hospital = self.hospital(provider_number)
+            geojson["features"].append(self.to_feature(hospital, index))
+            self.store_hospital(hospital, index)
+            index += 1
 
 
 if __name__ == '__main__':
@@ -241,10 +310,8 @@ if __name__ == '__main__':
         print "Importing"
         with open('manifest.json') as jsonfile:
             manifest = json.loads(jsonfile.read())
-        # process_batch(manifest, sys.argv[1])
-        print NationalIndicators(sys.argv[1], manifest["national"]).to_dict()
+        processor = Processor(manifest, sys.argv[1])
+        processor.to_json()
     except IndexError, e:
         print "You will need to specify a target directory"
         sys.exit(1)
-
-
