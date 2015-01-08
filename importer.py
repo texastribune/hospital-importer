@@ -6,6 +6,49 @@ from inflection import *
 from helpers import *
 
 
+class NationalIndicators(object):
+    def __init__(self, basepath, config):
+        self.basepath = basepath
+        self.config = config
+
+    def to_dict(self):
+        return dict(self.import_emergency_care(self.config["emergency_care"]), **self.import_readmission_rates(self.config["readmission_rates"]))
+
+    def import_emergency_care(self, filename):
+        output = {}
+        measures = ["ED_1b", "OP_18b", "OP_20"]
+        columns = {
+            "measure_id": 1,
+            "value": 4
+        }
+        with open(os.path.join(self.basepath, filename)) as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if row[columns["measure_id"]] in measures:
+                    output[row[columns["measure_id"]].lower()] = parse_float(row[columns["value"]])
+        return output
+
+    def import_readmission_rates(self, filename):
+        output = {}
+        measures = [
+            "MORT_30_PN", "MORT_30_HF", "MORT_30_AMI", "READM_30_AMI",
+            "MORT_30_HF", "READM_30_HOSP_WIDE", "READM_30_PN", "COMP_HIP_KNEE",
+            "PSI_4_SURG_COMP", "PSI_90_SAFETY"
+        ]
+        columns = {
+            "measure_id": 1,
+            "value": 2
+        }
+        with open(os.path.join(self.basepath, filename)) as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if row[columns["measure_id"]] in measures:
+                    output[row[columns["measure_id"]].lower()] = parse_float(row[columns["value"]])
+        output["serious_complications"] = output["psi_90_safety"]
+        output["death_from_serious_complications"] = output["psi_4_surg_comp"]
+        return output
+
+
 class OutcomeIndicators(object):
     # Readmissions Complications and Deaths - Hospital.csv
     measures = {
@@ -107,7 +150,7 @@ class QualityIndicators(object):
         "H_COMP_3_A_P",
         "H_COMP_1_A_P",
         "H_CLEAN_HSP_A_P"
-        ]
+    ]
 
     def __init__(self, filepath):
         self.filepath = filepath
@@ -185,7 +228,7 @@ class Processor(object):
         return output
 
 
-def process(manifest, directory):
+def process_batch(manifest, directory):
     hosp_file = os.path.join('./data', manifest["general_information"]["file"])
     general_info = GeneralInformation(hosp_file)
 
@@ -198,7 +241,8 @@ if __name__ == '__main__':
         print "Importing"
         with open('manifest.json') as jsonfile:
             manifest = json.loads(jsonfile.read())
-        process(manifest, sys.argv[1])
+        # process_batch(manifest, sys.argv[1])
+        print NationalIndicators(sys.argv[1], manifest["national"]).to_dict()
     except IndexError, e:
         print "You will need to specify a target directory"
         sys.exit(1)

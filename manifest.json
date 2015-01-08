@@ -16,5 +16,12 @@
   },
   "outcomes": {
     "file": "Readmissions Complications and Deaths - Hospital.csv"
+  },
+  "national": {
+    "emergency_care": "Timely and Effective Care - National.csv",
+    "readmission_rates": "Readmissions Complications and Deaths - National.csv"
+  },
+  "state": {
+
   }
 }
