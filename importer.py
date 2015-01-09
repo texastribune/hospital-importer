@@ -209,7 +209,7 @@ class GeneralInformation(object):
         return {
             "provider_number": clean(row[2]),
             "name": clean(row[3]),
-            "address": clean(row[4]),
+            "address": build_address(row),
             "city": clean(row[7]),
             "zipcode": clean(row[9]),
             "phone_number": format_phone(row[11]),
@@ -219,6 +219,7 @@ class GeneralInformation(object):
             "latitude": get_latitude(row[15]),
             "longitude": get_longitude(row[15]),
             "url": parameterize(unicode(row[3])),
+            "_id": clean(row[2])
         }
 
     def populate(self):
@@ -229,6 +230,13 @@ class GeneralInformation(object):
                 if row[2] != "":
                     # Closed hospitals are omitted
                     self.provider_numbers.append(row[2])
+
+    def build_address(self, row):
+        return "%s, %s - %s" % (
+            clean(row[4]),
+            clean(row[7]),
+            clean(row[9])
+        )
 
 
 class Processor(object):
