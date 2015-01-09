@@ -232,6 +232,13 @@ class Processor(object):
     def __init__(self, manifest, directory):
         self.manifest = manifest
         self.directory = directory
+        self.populate()
+
+    def populate(self):
+        hospital_data = json.loads('data/hospitals-2014.json')
+        self.cache = {}
+        for hospital in hospital_data:
+            self.cache[hospital["provider_number"]] = hospital["url"]
 
     def hospital(self, provider_number):
         hosp_file = os.path.join('./data', self.manifest["general_information"]["file"])
@@ -273,11 +280,16 @@ class Processor(object):
             }
         }
 
+    def to_zipcode(self, hospital):
+        return [hospital["zipcode"], [hospital["latitude"], hospital["longitude"]]]
+
     def store_hospital(self, hospital, index=1):
         with open("output/%s.json" % index, "w") as jsonfile:
             jsonfile.write(json.dumps(hospital))
 
     def to_json(self):
+        hospitals = []
+        zipcodes = {}
         geojson = {
         "type": "FeatureCollection",
         "bbox": [
