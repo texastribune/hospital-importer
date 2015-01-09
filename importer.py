@@ -223,6 +223,7 @@ class GeneralInformation(object):
     def populate(self):
         with open(self.filepath, 'rU') as csvfile:
             reader = csv.reader(csvfile)
+            reader.next() # Remove headers
             for row in reader:
                 if row[2] != "":
                     # Closed hospitals are omitted
@@ -236,7 +237,7 @@ class Processor(object):
         self.populate()
 
     def populate(self):
-        hospital_data = json.loads('data/hospitals-2014.json')
+        hospital_data = json.load(open('data/hospitals-2014.json'))
         self.cache = {}
         for hospital in hospital_data:
             self.cache[hospital["provider_number"]] = hospital["url"]
@@ -255,6 +256,9 @@ class Processor(object):
         output["associated_infections"] = AssociatedInfections(infec_file).provider(provider_number)
         output["complications_rates"] = ComplicationIndicators(comp_file).provider(provider_number)
         output["outcomes"] = OutcomeIndicators(outcome_file).provider(provider_number)
+
+        if provider_number in self.cache:
+            output["old_url"] = "old/" + self.cache[provider_number]
 
         return output
 
