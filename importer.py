@@ -302,18 +302,30 @@ class Processor(object):
         with open("output/%s.json" % index, "w") as jsonfile:
             jsonfile.write(json.dumps(hospital))
 
+    def to_csv(self):
+        general_information = GeneralInformation('data/' + self.manifest["general_information"]["file"])
+        providers = copy(general_information.provider_numbers)
+
+        with open('output/hospitals.csv', 'w') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['id', 'title', 'description', 'latitude', 'longitude'])
+            for provider in providers:
+                hospital = general_information.provider(provider)
+                writer.writerow([
+                    hospital['_id'],
+                    hospital['name'],
+                    hospital['address'],
+                    hospital['latitude'],
+                    hospital['longitude']
+                ])
+
+    def csv2geojson(self):
+        command = "csvjson --lat latitude --lon longitude output/hospitals.csv > output/hospitals.geojson"
+        os.system(command)
+
     def to_json(self):
         hospitals = []
         zipcodes = {}
-        geojson = {
-        "type": "FeatureCollection",
-        "bbox": [
-            -106.49985294199968,
-            25.91785218500047,
-            -93.76764915199965,
-            36.19071202900045
-        ],
-        "features": []}
 
         with open("output/state.json", "w") as jsonfile:
             jsonfile.write(json.dumps(self.state()))
@@ -340,9 +352,6 @@ class Processor(object):
         with open("output/zipcodes.json", "w") as jsonfile:
             jsonfile.write(json.dumps(zipcodes))
 
-        with open("output/hospitals.geojson", "w") as jsonfile:
-            jsonfile.write(json.dumps(geojson))
-
         with open("output/hospitals.json", "w") as jsonfile:
             jsonfile.write(json.dumps(hospitals))
 
@@ -353,6 +362,8 @@ if __name__ == '__main__':
         with open('manifest.json') as jsonfile:
             manifest = json.loads(jsonfile.read())
         processor = Processor(manifest, sys.argv[1])
+        processor.to_csv()
+        processor.csv2geojson()
         processor.to_json()
 
     except IndexError, e:
