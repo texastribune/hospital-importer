@@ -202,24 +202,24 @@ class GeneralInformation(object):
         with open(self.filepath, 'rU') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
-                if row[2] == provider_number:
+                if row[0] == provider_number:
                     return self.parse(row)
 
     def parse(self, row):
         return {
-            "provider_number": clean(row[2]),
-            "name": clean(row[3]),
-            "address": build_address(row),
-            "city": clean(row[7]),
-            "zipcode": clean(row[9]),
-            "phone_number": format_phone(row[11]),
-            "type": clean(row[12]),
-            "hospital ownership": clean(row[13]),
-            "emergency_services": clean(row[14]),
-            "latitude": get_latitude(row[15]),
-            "longitude": get_longitude(row[15]),
-            "url": parameterize(unicode(row[3])),
-            "_id": clean(row[2])
+            "provider_number": clean(row[0]),
+            "name": clean(row[1]),
+            "address": self.build_address(row),
+            "city": clean(row[5]),
+            "zipcode": clean(row[7]),
+            "phone_number": format_phone(row[9]),
+            "type": clean(row[10]),
+            "hospital ownership": clean(row[11]),
+            "emergency_services": clean(row[12]),
+            "latitude": get_latitude(row[13]),
+            "longitude": get_longitude(row[13]),
+            "url": parameterize(unicode(row[1])),
+            "_id": clean(row[0])
         }
 
     def populate(self):
@@ -229,13 +229,13 @@ class GeneralInformation(object):
             for row in reader:
                 if row[2] != "":
                     # Closed hospitals are omitted
-                    self.provider_numbers.append(row[2])
+                    self.provider_numbers.append(row[0])
 
     def build_address(self, row):
         return "%s, %s - %s" % (
-            clean(row[4]),
-            clean(row[7]),
-            clean(row[9])
+            clean(row[2]),
+            clean(row[5]),
+            clean(row[7])
         )
 
 
