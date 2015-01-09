@@ -312,9 +312,23 @@ class Processor(object):
 
         for provider_number in general_info.provider_numbers:
             hospital = self.hospital(provider_number)
+            hospital["_id"] = index
             geojson["features"].append(self.to_feature(hospital, index))
+            zipcode, coords = self.to_zipcode(hospital)
+            zipcodes[zipcode] = coords
+            hospitals.append(hospital)
+
             self.store_hospital(hospital, index)
             index += 1
+
+        with open("output/zipcodes.json" % index, "w") as jsonfile:
+            jsonfile.write(json.dumps(zipcodes))
+
+        with open("output/hospitals.geojson" % index, "w") as jsonfile:
+            jsonfile.write(json.dumps(geojson))
+
+        with open("output/hospitals.json" % index, "w") as jsonfile:
+            jsonfile.write(json.dumps(hospitals))
 
 
 if __name__ == '__main__':
