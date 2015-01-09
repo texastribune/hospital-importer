@@ -260,11 +260,12 @@ class Processor(object):
         outcome_file = os.path.join(self.directory, self.manifest["outcomes"]["file"])
 
         output = GeneralInformation(hosp_file).provider(provider_number)
-        output["emergency_care"] = EmergencyRates(emer_file).provider(provider_number)
-        output["quality_indicators"] = QualityIndicators(quality_file).provider(provider_number)
-        output["associated_infections"] = AssociatedInfections(infec_file).provider(provider_number)
-        output["complications_rates"] = ComplicationIndicators(comp_file).provider(provider_number)
-        output["outcomes"] = OutcomeIndicators(outcome_file).provider(provider_number)
+        output["indicators"] = {}
+        output["indicators"].update(EmergencyRates(emer_file).provider(provider_number))
+        output["indicators"].update(QualityIndicators(quality_file).provider(provider_number))
+        output["indicators"].update(AssociatedInfections(infec_file).provider(provider_number))
+        output["indicators"].update(ComplicationIndicators(comp_file).provider(provider_number))
+        output["indicators"].update(OutcomeIndicators(outcome_file).provider(provider_number))
 
         if provider_number in self.cache:
             output["old_url"] = "old/" + self.cache[provider_number]
@@ -326,13 +327,13 @@ class Processor(object):
 
         for provider_number in providers:
             hospital = self.provider(provider_number)
-            hospital["_id"] = index
-            geojson["features"].append(self.to_feature(hospital, index))
+            # hospital["_id"] = index
+            geojson["features"].append(self.to_feature(hospital, provider_number))
             zipcode, coords = self.to_zipcode(hospital)
             zipcodes[zipcode] = coords
             hospitals.append(hospital)
 
-            self.store_hospital(hospital, index)
+            self.store_hospital(hospital, provider_number)
             print "%i - %s imported." % (index, provider_number)
             index += 1
 
