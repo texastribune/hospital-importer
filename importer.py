@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import sys
+from copy import copy
 from inflection import *
 from helpers import *
 
@@ -286,7 +287,7 @@ class Processor(object):
         }
 
     def to_zipcode(self, hospital):
-        return [hospital["zipcode"], [hospital["latitude"], hospital["longitude"]]]
+        return [hospital["zipcode"], [float(hospital["latitude"]), float(hospital["longitude"])]]
 
     def store_hospital(self, hospital, index=1):
         with open("output/%s.json" % index, "w") as jsonfile:
@@ -313,9 +314,9 @@ class Processor(object):
 
         index = 1
         hosp_file = os.path.join('./data', self.manifest["general_information"]["file"])
-        general_info = GeneralInformation(hosp_file)
+        providers = copy(GeneralInformation(hosp_file).provider_numbers)
 
-        for provider_number in general_info.provider_numbers:
+        for provider_number in providers:
             hospital = self.provider(provider_number)
             hospital["_id"] = index
             geojson["features"].append(self.to_feature(hospital, index))
@@ -324,15 +325,16 @@ class Processor(object):
             hospitals.append(hospital)
 
             self.store_hospital(hospital, index)
+            print "%i - %s imported." % (index, provider_number)
             index += 1
 
-        with open("output/zipcodes.json" % index, "w") as jsonfile:
+        with open("output/zipcodes.json", "w") as jsonfile:
             jsonfile.write(json.dumps(zipcodes))
 
-        with open("output/hospitals.geojson" % index, "w") as jsonfile:
+        with open("output/hospitals.geojson", "w") as jsonfile:
             jsonfile.write(json.dumps(geojson))
 
-        with open("output/hospitals.json" % index, "w") as jsonfile:
+        with open("output/hospitals.json", "w") as jsonfile:
             jsonfile.write(json.dumps(hospitals))
 
 
