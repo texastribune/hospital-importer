@@ -198,34 +198,35 @@ class GeneralInformation(object):
         self.populate()
 
     def provider(self, provider_number):
-        with open(self.filepath) as csvfile:
+        with open(self.filepath, 'rU') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
-                if row[0] == provider_number:
+                if row[2] == provider_number:
                     return self.parse(row)
 
     def parse(self, row):
         return {
-            "provider_number": clean(row[0]),
-            "name": clean(row[1]),
-            "address": clean(row[2]),
-            "city": clean(row[5]),
-            "zipcode": clean(row[7]),
-            "county": clean(row[8]),
-            "phone_number": format_phone(row[9]),
-            "type": clean(row[10]),
-            "hospital ownership": clean(row[11]),
-            "emergency_services": clean(row[12]),
-            "latitude": get_latitude(row[13]),
-            "longitude": get_longitude(row[13]),
-            "url": parameterize(unicode(row[1])),
+            "provider_number": clean(row[2]),
+            "name": clean(row[3]),
+            "address": clean(row[4]),
+            "city": clean(row[7]),
+            "zipcode": clean(row[9]),
+            "phone_number": format_phone(row[11]),
+            "type": clean(row[12]),
+            "hospital ownership": clean(row[13]),
+            "emergency_services": clean(row[14]),
+            "latitude": get_latitude(row[15]),
+            "longitude": get_longitude(row[15]),
+            "url": parameterize(unicode(row[3])),
         }
 
     def populate(self):
-        with open(self.filepath) as csvfile:
-            reader = csv.DictReader(csvfile)
+        with open(self.filepath, 'rU') as csvfile:
+            reader = csv.reader(csvfile)
             for row in reader:
-                self.provider_numbers.append(row["Provider Number"])
+                if row[2] != "":
+                    # Closed hospitals are omitted
+                    self.provider_numbers.append(row[2])
 
 
 class Processor(object):
@@ -240,7 +241,7 @@ class Processor(object):
         for hospital in hospital_data:
             self.cache[hospital["provider_number"]] = hospital["url"]
 
-    def hospital(self, provider_number):
+    def provider(self, provider_number):
         hosp_file = os.path.join('./data', self.manifest["general_information"]["file"])
         emer_file = os.path.join(self.directory, self.manifest["emergency_care"]["file"])
         quality_file = os.path.join(self.directory, self.manifest["quality_indicators"]["file"])
@@ -311,7 +312,7 @@ class Processor(object):
         general_info = GeneralInformation(hosp_file)
 
         for provider_number in general_info.provider_numbers:
-            hospital = self.hospital(provider_number)
+            hospital = self.provider(provider_number)
             hospital["_id"] = index
             geojson["features"].append(self.to_feature(hospital, index))
             zipcode, coords = self.to_zipcode(hospital)
@@ -338,6 +339,7 @@ if __name__ == '__main__':
             manifest = json.loads(jsonfile.read())
         processor = Processor(manifest, sys.argv[1])
         processor.to_json()
+
     except IndexError, e:
         print "You will need to specify a target directory"
         sys.exit(1)

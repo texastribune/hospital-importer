@@ -1,6 +1,6 @@
 {
   "general_information": {
-    "file": "Hospital_Data_TX.csv"
+    "file": "Hospital_Data_Merge_TX.csv"
   },
   "emergency_care": {
     "file": "Timely and Effective Care - Hospital.csv"
