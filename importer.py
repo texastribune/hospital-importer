@@ -196,7 +196,8 @@ class GeneralInformation(object):
 
     def __init__(self, filepath):
         self.filepath = filepath
-        self.populate()
+        if len(self.provider_numbers) == 0:
+            self.populate()
 
     def provider(self, provider_number):
         with open(self.filepath, 'rU') as csvfile:
@@ -340,7 +341,6 @@ class Processor(object):
         for provider_number in providers:
             hospital = self.provider(provider_number)
             # hospital["_id"] = index
-            geojson["features"].append(self.to_feature(hospital, provider_number))
             zipcode, coords = self.to_zipcode(hospital)
             zipcodes[zipcode] = coords
             hospitals.append(hospital)
