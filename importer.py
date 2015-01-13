@@ -56,8 +56,8 @@ class NationalIndicators(object):
         output = {}
         measures = [
             "MORT_30_PN", "MORT_30_HF", "MORT_30_AMI", "READM_30_AMI",
-            "MORT_30_HF", "READM_30_HOSP_WIDE", "READM_30_PN", "COMP_HIP_KNEE",
-            "PSI_4_SURG_COMP", "PSI_90_SAFETY"
+            "MORT_30_HF", "READM_30_HOSP_WIDE", "READM_30_PN", "READM_30_HF",
+            "COMP_HIP_KNEE", "PSI_4_SURG_COMP", "PSI_90_SAFETY"
         ]
         columns = {
             "measure_id": 1,
@@ -76,7 +76,7 @@ class NationalIndicators(object):
 class OutcomeIndicators(object):
     # Readmissions Complications and Deaths - Hospital.csv
     measures = {
-        "Acute Myocardial Infarction (AMI) 30-Day Readmission Rate": "readm_30_ha",
+        "Acute Myocardial Infarction (AMI) 30-Day Readmission Rate": "readm_30_ami",
         "Heart failure (HF) 30-Day Readmission Rate": "readm_30_hf",
         "Pneumonia (PN) 30-Day Readmission Rate": "readm_30_pn",
         "Rate of readmission after hip/knee surgery": "readm_30_hip_knee",
