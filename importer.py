@@ -199,18 +199,18 @@ class GeneralInformation(object):
         if len(self.provider_numbers) == 0:
             self.populate()
 
-    def provider(self, provider_number):
+    def provider(self, provider_number, full_address=False):
         with open(self.filepath, 'rU') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[0] == provider_number:
-                    return self.parse(row)
+                    return self.parse(row, full_address)
 
-    def parse(self, row):
-        return {
+    def parse(self, row, full_address=False):
+        output = {
             "provider_number": clean(row[0]),
             "name": clean(row[1]),
-            "address": self.build_address(row),
+            "address": clean(row[2]),
             "city": clean(row[5]),
             "zipcode": clean(row[7]),
             "phone_number": format_phone(row[9]),
@@ -222,6 +222,9 @@ class GeneralInformation(object):
             "url": parameterize(unicode(row[1])),
             "_id": clean(row[0])
         }
+        if full_address:
+            output["address"] = self.build_full_address(row)
+        return output
 
     def populate(self):
         with open(self.filepath, 'rU') as csvfile:
@@ -232,7 +235,7 @@ class GeneralInformation(object):
                     # Closed hospitals are omitted
                     self.provider_numbers.append(row[0])
 
-    def build_address(self, row):
+    def build_full_address(self, row):
         return "%s, %s - %s" % (
             clean(row[2]),
             clean(row[5]),
@@ -311,7 +314,7 @@ class Processor(object):
             writer = csv.writer(csvfile)
             writer.writerow(['id', 'title', 'description', 'latitude', 'longitude'])
             for provider in providers:
-                hospital = general_information.provider(provider)
+                hospital = general_information.provider(provider, True) # with full address
                 writer.writerow([
                     hospital['_id'],
                     hospital['name'],
