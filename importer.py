@@ -26,7 +26,7 @@ class StateIndicators(object):
             for row in reader:
                 if row[0] == "TX":
                     if row[columns["measure_id"]] in measures:
-                        output[row[columns["measure_id"]].lower()] = parse_float(row[columns["value"]])
+                        output[row[columns["measure_id"]].lower()] = parse_int(row[columns["value"]])
         return output
 
 
@@ -49,7 +49,7 @@ class NationalIndicators(object):
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[columns["measure_id"]] in measures:
-                    output[row[columns["measure_id"]].lower()] = parse_float(row[columns["value"]])
+                    output[row[columns["measure_id"]].lower()] = parse_int(row[columns["value"]])
         return output
 
     def import_readmission_rates(self, filename):
