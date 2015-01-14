@@ -250,6 +250,7 @@ class Processor(object):
         self.populate()
 
     def populate(self):
+        # Populates old data to find old urls
         hospital_data = json.load(open('data/hospitals-2014.json'))
         self.cache = {}
         for hospital in hospital_data:
