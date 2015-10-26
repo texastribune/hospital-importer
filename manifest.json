@@ -3,25 +3,25 @@
     "file": "Hospital_Data_Merge_TX.csv"
   },
   "emergency_care": {
-    "file": "Timely and Effective Care - Hospital.csv"
+    "file": "Timely_and_Effective_Care_-_Hospital.csv"
   },
   "quality_indicators": {
-    "file": "HCAHPS - Hospital.csv"
+    "file": "Patient_survey__HCAHPS__-_Hospital.csv"
   },
   "associated_infections": {
-    "file": "Healthcare Associated Infections - Hospital.csv"
+    "file": "Healthcare_Associated_Infections_-_Hospital.csv"
   },
   "complications_rates": {
-    "file": "Readmissions Complications and Deaths - Hospital.csv"
+    "file": "Readmissions_Complications_and_Deaths_-_Hospital.csv"
   },
   "outcomes": {
-    "file": "Readmissions Complications and Deaths - Hospital.csv"
+    "file": "Readmissions_Complications_and_Deaths_-_Hospital.csv"
   },
   "national": {
-    "emergency_care": "Timely and Effective Care - National.csv",
-    "readmission_rates": "Readmissions Complications and Deaths - National.csv"
+    "emergency_care": "Timely_and_Effective_Care_-_National.csv",
+    "readmission_rates": "Readmissions_Complications_and_Deaths_-_National.csv"
   },
   "state": {
-    "emergency_care": "Timely and Effective Care - State.csv"
+    "emergency_care": "Timely_and_Effective_Care_-_State.csv"
   }
 }
