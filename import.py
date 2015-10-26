@@ -273,7 +273,7 @@ class Processor(object):
         output["indicators"].update(OutcomeIndicators(outcome_file).provider(provider_number))
 
         if provider_number in self.cache:
-            output["old_url"] = self.cache[provider_number]
+            output["old_url_2013"] = self.cache[provider_number]
 
         return output
 
